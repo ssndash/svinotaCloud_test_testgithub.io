@@ -1,32 +1,467 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>svinotaCloud | Cloud</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SvinotaCloud</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        google: {
+                            dark: '#131314',
+                            surface: '#1e1f20',
+                            search: '#28292a',
+                            blue: '#a8c7fa',
+                            border: '#444746'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Google Sans', 'Roboto', sans-serif;
+            transition: background-color 0.3s;
+        }
+        /* Темная тема (основная) */
+        .dark body { background-color: #131314; color: #e3e3e3; }
+        .dark .main-container { background-color: #1e1f20; border-color: #444746; }
+        .dark .sidebar-item.active { background-color: #004a77; color: #c2e7ff; }
+        .dark .bg-google-search { background-color: #28292a; }
+        
+        /* Светлая тема */
+        html:not(.dark) body { background-color: #f7f9fc; color: #1f1f1f; }
+        html:not(.dark) .main-container { background-color: #ffffff; border-color: #e0e0e0; }
+        html:not(.dark) .sidebar-item.active { background-color: #e8f0fe; color: #1967d2; }
+        html:not(.dark) .bg-google-search { background-color: #edf2fa; }
+        html:not(.dark) .sidebar-item { color: #444746; }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .sidebar-compact .sidebar-text { display: none; }
+        .sidebar-compact { width: 80px !important; }
+        
+        .main-container {
+            border-radius: 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Исправление бага с label в инпуте */
+        .google-input-container { position: relative; }
+        .google-input {
+            background: transparent;
+            border: 1px solid #8e918f;
+            border-radius: 4px;
+            padding: 13px 15px;
+            width: 100%;
+            transition: border 0.2s;
+            color: inherit;
+        }
+        .google-input:focus {
+            border: 2px solid #a8c7fa;
+            outline: none;
+            padding: 12px 14px;
+        }
+        .google-label {
+            position: absolute;
+            left: 12px;
+            top: 13px;
+            color: #8e918f;
+            pointer-events: none;
+            transition: all 0.2s;
+            background: transparent;
+            padding: 0 4px;
+        }
+        /* Скрываем/поднимаем label при фокусе или наличии текста */
+        .google-input:focus ~ .google-label,
+        .google-input:not(:placeholder-shown) ~ .google-label {
+            top: -10px;
+            left: 10px;
+            font-size: 12px;
+            color: #a8c7fa;
+            background: #131314;
+        }
+
+        .hide { display: none !important; }
+        
+        /* Кнопка "Создать" при блокировке */
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #444746; border-radius: 10px; }
+    </style>
 </head>
-<body>
+<body class="h-screen flex flex-col overflow-hidden">
 
-    <div class="container">
-        <div class="header">
-            <div class="logo-circle">
-                <img src="https://via.placeholder.com/80/007AFF/FFFFFF?text=☁️" alt="Logo">
+    <!-- Экран входа -->
+    <div id="authScreen" class="fixed inset-0 z-[200] bg-black flex items-center justify-center p-4">
+        <div class="bg-[#131314] w-full max-w-[1000px] min-h-[500px] rounded-3xl p-10 flex flex-col md:flex-row shadow-2xl border border-[#333]">
+            <div class="flex-1 pr-8">
+                <img src="https://github.com/ssndash/svinotaCloud_test_testgithub.io/blob/main/543848034-f0ad5ec1-e428-414f-b97f-c90b239471e3.png?raw=true" alt="Svinota Logo" class="w-12 h-12 mb-6">
+                <h1 class="text-4xl font-normal mb-4 text-white">Вход</h1>
+                <p class="text-lg text-gray-300">Используйте аккаунт Svinota для перехода в SvinotaCloud. Этот аккаунт будет доступен в других приложениях Svinota.</p>
             </div>
-            <h1>svinotaCloud</h1>
-            <p>Ваши файлы всегда под рукой</p>
-        </div>
+            <div class="flex-1 flex flex-col justify-center mt-8 md:mt-0">
+                <div class="google-input-container mb-2">
+                    <input type="email" id="emailInput" class="google-input" placeholder=" " autocomplete="off">
+                    <label class="google-label">Email или телефон</label>
+                </div>
+                <a href="#" class="text-[#a8c7fa] font-medium text-sm mb-10 hover:underline">Забыли почту?</a>
+                
+                <p class="text-sm text-[#8e918f] mb-10 leading-relaxed">
+                    Не ваш компьютер? Используйте режим гостя для приватного входа. <a href="#" class="text-[#a8c7fa] font-medium hover:underline">Подробнее</a>
+                </p>
 
-        <div class="upload-card">
-            <input type="file" id="fileInput" hidden>
-            <label for="fileInput" class="drop-zone" id="dropZone">
-                <span class="icon">📁</span>
-                <span class="text">Выберите файл или перетащите его сюда</span>
-            </label>
-            <div id="status" class="status-msg"></div>
+                <div class="flex items-center justify-between">
+                    <button class="text-[#a8c7fa] font-medium hover:bg-[#a8c7fa10] px-4 py-2 rounded">Создать аккаунт</button>
+                    <button onclick="login()" class="bg-[#a8c7fa] text-[#003158] font-medium px-6 py-2 rounded-full hover:bg-[#d3e3fd] transition-colors">Далее</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Шапка -->
+    <header class="h-16 flex items-center justify-between px-4 z-50">
+        <div class="flex items-center space-x-2 min-w-[240px]">
+            <button onclick="toggleSidebar()" class="p-3 hover:bg-[#44474633] rounded-full">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+            <div class="flex items-center space-x-2 px-1">
+                <img src="https://github.com/ssndash/svinotaCloud_test_testgithub.io/blob/main/543848034-f0ad5ec1-e428-414f-b97f-c90b239471e3.png?raw=true" alt="Logo" class="w-8 h-8">
+                <span class="text-xl font-normal">SvinotaCloud</span>
+            </div>
+        </div>
+
+        <div class="flex-1 max-w-2xl px-4">
+            <div class="bg-google-search flex items-center px-4 py-2.5 rounded-full group focus-within:bg-white focus-within:shadow-lg transition-all">
+                <span class="material-symbols-outlined opacity-70 group-focus-within:text-gray-600 mr-3">search</span>
+                <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Поиск в SvinotaCloud" class="bg-transparent w-full outline-none text-base group-focus-within:text-black">
+                <span class="material-symbols-outlined opacity-70 group-focus-within:text-gray-600 ml-3 cursor-pointer">tune</span>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-1 min-w-[240px] justify-end">
+            <button onclick="toggleTheme()" class="p-2 hover:bg-[#44474633] rounded-full" title="Переключить тему">
+                <span class="material-symbols-outlined" id="themeIcon">light_mode</span>
+            </button>
+            <div class="relative">
+                <div id="avatarBtn" onclick="toggleAccountMenu()" class="w-9 h-9 rounded-full bg-[#a8c7fa] flex items-center justify-center text-[#003158] font-medium cursor-pointer ml-2">U</div>
+                <!-- Меню аккаунта -->
+                <div id="accountMenu" class="absolute right-0 mt-2 w-80 bg-[#1e1f20] border border-[#444746] rounded-3xl shadow-2xl p-4 hidden text-white">
+                    <div class="text-center p-4">
+                        <div id="menuAvatar" class="w-16 h-16 rounded-full bg-[#a8c7fa] flex items-center justify-center text-3xl text-[#003158] font-medium mx-auto mb-2">U</div>
+                        <h4 id="menuName" class="text-lg font-medium">Пользователь</h4>
+                        <p id="menuEmail" class="text-sm text-gray-400">user@svinota.com</p>
+                    </div>
+                    <div class="border-t border-[#444746] mt-4 pt-4">
+                        <button onclick="location.reload()" class="w-full text-left px-4 py-2 hover:bg-[#444746] rounded-lg text-sm flex items-center">
+                            <span class="material-symbols-outlined mr-3 text-sm">logout</span> Выйти
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Боковая панель -->
+        <aside id="sidebar" class="w-64 flex flex-col py-2 transition-all duration-300 overflow-x-hidden">
+            <div class="px-4 mb-4">
+                <button id="newBtn" onclick="openModal('uploadModal')" class="flex items-center space-x-4 px-4 py-4 bg-[#37393b] hover:bg-[#444746] text-[#e3e3e3] rounded-2xl shadow-lg transition-all min-w-[56px] dark:bg-[#37393b] bg-white border dark:border-none border-gray-200 text-gray-800 dark:text-white">
+                    <span class="material-symbols-outlined text-blue-400">add</span>
+                    <span class="font-medium text-sm sidebar-text">Создать</span>
+                </button>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto">
+                <div onclick="switchTab('home', this)" class="sidebar-item active flex items-center space-x-3 p-3 pl-6 cursor-pointer text-sm">
+                    <span class="material-symbols-outlined">home</span>
+                    <span class="sidebar-text">Главная</span>
+                </div>
+                <div onclick="switchTab('drive', this)" class="sidebar-item flex items-center space-x-3 p-3 pl-6 cursor-pointer text-sm">
+                    <span class="material-symbols-outlined">hard_drive</span>
+                    <span class="sidebar-text">Мой диск</span>
+                </div>
+                <div onclick="switchTab('shared', this)" class="sidebar-item flex items-center space-x-3 p-3 pl-6 cursor-pointer text-sm">
+                    <span class="material-symbols-outlined">group</span>
+                    <span class="sidebar-text">Общий доступ</span>
+                </div>
+                <div onclick="switchTab('recent', this)" class="sidebar-item flex items-center space-x-3 p-3 pl-6 cursor-pointer text-sm">
+                    <span class="material-symbols-outlined">schedule</span>
+                    <span class="sidebar-text">Недавние</span>
+                </div>
+                
+                <div class="px-6 py-4 mt-4 border-t border-[#44474633]">
+                    <div class="flex items-center space-x-2 text-gray-400 mb-2">
+                        <span class="material-symbols-outlined text-sm">cloud</span>
+                        <span class="text-sm sidebar-text">Хранилище</span>
+                    </div>
+                    <div class="w-full bg-[#44474633] rounded-full h-1 mb-2 sidebar-text">
+                        <div id="storageBar" class="bg-blue-400 h-1 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <p class="text-[11px] text-gray-500 sidebar-text" id="storageText">Использовано 0 Б из 15 ГБ</p>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Основной контент -->
+        <main class="flex-1 main-container flex flex-col overflow-hidden m-2 border transition-colors duration-300">
+            <div class="h-14 flex items-center justify-between px-6 border-b border-[#44474633]">
+                <h2 id="tabTitle" class="text-xl font-normal">Главная</h2>
+                <div class="flex items-center space-x-2">
+                    <div class="flex border border-[#44474633] rounded-full overflow-hidden bg-opacity-50">
+                        <button id="listViewBtn" onclick="toggleLayout('list')" class="p-1.5 px-3 hover:bg-[#44474633] opacity-60">
+                            <span class="material-symbols-outlined text-sm">view_list</span>
+                        </button>
+                        <button id="gridViewBtn" onclick="toggleLayout('grid')" class="p-1.5 px-3 bg-[#44474633] text-blue-400">
+                            <span class="material-symbols-outlined text-sm">grid_view</span>
+                        </button>
+                    </div>
+                    <button class="p-2 hover:bg-[#44474633] rounded-full"><span class="material-symbols-outlined">info</span></button>
+                </div>
+            </div>
+
+            <div class="p-6 overflow-y-auto flex-1" id="mainScroll">
+                <!-- Пустое состояние -->
+                <div id="emptyState" class="flex flex-col items-center justify-center py-20 text-center">
+                    <div class="w-48 h-48 dark:bg-[#28292a] bg-gray-100 rounded-full flex items-center justify-center mb-6">
+                        <span class="material-symbols-outlined text-7xl opacity-20">folder_open</span>
+                    </div>
+                    <h3 class="text-xl font-medium mb-2">Здесь пока пусто</h3>
+                    <p class="opacity-60">Загрузите файлы, чтобы начать работу</p>
+                </div>
+
+                <div id="filesSection" class="hide">
+                    <h3 class="text-sm font-medium opacity-60 mb-4">Файлы</h3>
+                    <div id="filesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 transition-all"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Модалки -->
+    <div id="uploadModal" class="modal-overlay fixed inset-0 hidden flex items-center justify-center z-[110] bg-black bg-opacity-50">
+        <div class="dark:bg-[#1e1f20] bg-white border dark:border-[#444746] rounded-3xl w-80 p-2 shadow-2xl">
+            <div class="p-4 border-b dark:border-[#444746] border-gray-100"><h3 class="font-medium">Создать</h3></div>
+            <div class="py-2">
+                <button onclick="showFolderPrompt()" class="w-full text-left px-4 py-3 hover:bg-[#44474633] flex items-center space-x-3 transition">
+                    <span class="material-symbols-outlined">create_new_folder</span><span>Папка</span>
+                </button>
+                <label class="w-full text-left px-4 py-3 hover:bg-[#44474633] flex items-center space-x-3 transition cursor-pointer">
+                    <span class="material-symbols-outlined">upload_file</span><span>Загрузить файл</span>
+                    <input type="file" id="fileInput" class="hidden" multiple onchange="processUpload(event)">
+                </label>
+            </div>
+            <div class="p-2 flex justify-end">
+                <button onclick="closeModal('uploadModal')" class="px-4 py-2 text-sm text-blue-400 font-medium hover:bg-[#44474633] rounded-full">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статус загрузки -->
+    <div id="uploadStatus" class="fixed bottom-6 right-6 bg-white border rounded-xl shadow-2xl w-80 overflow-hidden hidden z-[150]">
+        <div class="bg-[#2a2a2a] text-white p-3 flex justify-between items-center text-sm">
+            <span id="statusTitle">Загрузка...</span>
+            <button onclick="closeStatus()"><span class="material-symbols-outlined text-sm">close</span></button>
+        </div>
+        <div class="p-4">
+            <div id="currentFileName" class="text-xs text-black mb-2 truncate">Файл...</div>
+            <div class="w-full bg-gray-200 rounded-full h-1.5">
+                <div id="statusProgressBar" class="bg-blue-600 h-1.5 rounded-full w-0 transition-all"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let filesList = [];
+        let totalUsedBytes = 0;
+        const MAX_STORAGE = 15 * 1024 * 1024 * 1024; // 15 ГБ
+        let currentLayout = 'grid';
+
+        function login() {
+            const emailInput = document.getElementById('emailInput');
+            const email = emailInput.value || 'Пользователь';
+            const name = email.split('@')[0];
+            
+            const avatar = document.getElementById('avatarBtn');
+            const menuAvatar = document.getElementById('menuAvatar');
+            const menuName = document.getElementById('menuName');
+            const menuEmail = document.getElementById('menuEmail');
+            
+            if (avatar) avatar.innerText = name[0].toUpperCase();
+            if (menuAvatar) menuAvatar.innerText = name[0].toUpperCase();
+            if (menuName) menuName.innerText = name;
+            if (menuEmail) menuEmail.innerText = email.includes('@') ? email : email + '@svinota.com';
+            
+            document.getElementById('authScreen').classList.add('hide');
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('sidebar-compact');
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if(html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                icon.innerText = 'dark_mode';
+            } else {
+                html.classList.add('dark');
+                icon.innerText = 'light_mode';
+            }
+        }
+
+        function toggleAccountMenu() {
+            document.getElementById('accountMenu').classList.toggle('hidden');
+        }
+
+        function toggleLayout(type) {
+            currentLayout = type;
+            const grid = document.getElementById('filesGrid');
+            const listBtn = document.getElementById('listViewBtn');
+            const gridBtn = document.getElementById('gridViewBtn');
+
+            if(type === 'list') {
+                grid.className = "flex flex-col space-y-1";
+                listBtn.classList.add('bg-[#44474633]', 'text-blue-400');
+                gridBtn.classList.remove('bg-[#44474633]', 'text-blue-400');
+            } else {
+                grid.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4";
+                gridBtn.classList.add('bg-[#44474633]', 'text-blue-400');
+                listBtn.classList.remove('bg-[#44474633]', 'text-blue-400');
+            }
+            renderFiles();
+        }
+
+        function switchTab(id, el) {
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('tabTitle').innerText = el.querySelector('.sidebar-text').innerText;
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            renderFiles(query);
+        }
+
+        function renderFiles(filter = "") {
+            const grid = document.getElementById('filesGrid');
+            grid.innerHTML = "";
+            const filtered = filesList.filter(f => f.name.toLowerCase().includes(filter));
+
+            if(filtered.length === 0 && filesList.length > 0) {
+                grid.innerHTML = "<div class='text-center p-10 opacity-50 w-full col-span-full'>Ничего не найдено</div>";
+                return;
+            }
+
+            filtered.forEach(file => {
+                const div = document.createElement('div');
+                if(currentLayout === 'grid') {
+                    div.className = "dark:bg-[#28292a] bg-white border border-[#44474633] rounded-xl overflow-hidden hover:bg-[#44474633] transition cursor-pointer group";
+                    div.innerHTML = `
+                        <div class="h-28 flex items-center justify-center text-blue-400"><span class="material-symbols-outlined text-4xl">description</span></div>
+                        <div class="p-3 border-t border-[#44474633] flex items-center space-x-2">
+                            <span class="material-symbols-outlined text-sm text-blue-400">description</span>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-medium truncate">${file.name}</p>
+                                <p class="text-[10px] opacity-50">${formatBytes(file.size)}</p>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    div.className = "flex items-center space-x-4 p-3 border-b border-[#44474633] hover:bg-[#44474633] transition cursor-pointer";
+                    div.innerHTML = `
+                        <span class="material-symbols-outlined text-blue-400">description</span>
+                        <span class="flex-1 text-sm truncate">${file.name}</span>
+                        <span class="text-xs opacity-50 w-24 text-right">${formatBytes(file.size)}</span>
+                        <span class="text-xs opacity-50 w-32 text-right">я</span>
+                    `;
+                }
+                grid.prepend(div);
+            });
+        }
+
+        function processUpload(e) {
+            const files = e.target.files;
+            if (!files.length) return;
+            
+            // Проверка лимита перед загрузкой
+            if(totalUsedBytes + files[0].size > MAX_STORAGE) {
+                alert("Недостаточно места в хранилище!");
+                return;
+            }
+
+            closeModal('uploadModal');
+            const file = files[0];
+            document.getElementById('uploadStatus').classList.remove('hidden');
+            document.getElementById('currentFileName').innerText = file.name;
+            
+            let prog = 0;
+            const bar = document.getElementById('statusProgressBar');
+            const timer = setInterval(() => {
+                prog += 5;
+                bar.style.width = prog + '%';
+                if (prog >= 100) {
+                    clearInterval(timer);
+                    filesList.push({name: file.name, size: file.size});
+                    totalUsedBytes += file.size;
+                    updateUI();
+                    setTimeout(closeStatus, 1500);
+                }
+            }, 50);
+        }
+
+        function updateUI() {
+            document.getElementById('emptyState').classList.add('hide');
+            document.getElementById('filesSection').classList.remove('hide');
+            
+            const percent = (totalUsedBytes / MAX_STORAGE) * 100;
+            document.getElementById('storageBar').style.width = Math.min(percent, 100) + '%';
+            document.getElementById('storageText').innerText = `Использовано ${formatBytes(totalUsedBytes)} из 15 ГБ`;
+            
+            // Деактивация кнопки New если лимит превышен
+            const newBtn = document.getElementById('newBtn');
+            if(totalUsedBytes >= MAX_STORAGE) {
+                newBtn.disabled = true;
+                newBtn.title = "Место в хранилище закончилось";
+            } else {
+                newBtn.disabled = false;
+            }
+
+            renderFiles();
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Б';
+            const k = 1024;
+            const sizes = ['Б', 'КБ', 'МБ', 'ГБ'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        function openModal(id) { 
+            if(totalUsedBytes < MAX_STORAGE) {
+                document.getElementById(id).classList.remove('hidden'); 
+            }
+        }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function closeStatus() { document.getElementById('uploadStatus').classList.add('hidden'); }
+        function showFolderPrompt() { alert("Создание папок будет доступно в следующем обновлении!"); closeModal('uploadModal'); }
+    </script>
 </body>
 </html>
